@@ -1,0 +1,149 @@
+inputs:
+  - name: CART_UPDATE
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.CART_UPDATE
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+  - name: CHECKOUT_UPDATED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.CHECKOUT_UPDATED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+        - select: lower(email)
+          type: email
+          entity: shopify_customer
+  - name: IDENTIFIES
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.IDENTIFIES
+      occurred_at_col: original_timestamp
+      ids:
+        - select: user_id
+          type: user_id
+          entity: shopify_customer
+        - select: lower(email)
+          type: email
+          entity: shopify_customer
+  - name: ORDER_CREATED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.ORDER_CREATED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: user_id
+          type: user_id
+          entity: shopify_customer
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+        - select: lower(email)
+          type: email
+          entity: shopify_customer
+        - select: lower(contact_email)
+          type: email
+          entity: shopify_customer
+  - name: ORDER_PAID
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.ORDER_PAID
+      occurred_at_col: original_timestamp
+      ids:
+        - select: user_id
+          type: user_id
+          entity: shopify_customer
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+        - select: lower(email)
+          type: email
+          entity: shopify_customer
+        - select: lower(contact_email)
+          type: email
+          entity: shopify_customer
+  - name: TRACKS
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.TRACKS
+      occurred_at_col: original_timestamp
+      ids:
+        - select: user_id
+          type: user_id
+          entity: shopify_customer
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+  - name: PAGES
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.PAGES
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+  - name: CHECKOUT_STARTED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.CHECKOUT_STARTED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+  - name: ORDER_UPDATED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.ORDER_UPDATED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+        - select: lower(contact_email)
+          type: email
+          entity: shopify_customer
+        - select: lower(email)
+          type: email
+          entity: shopify_customer
+        - select: user_id
+          type: user_id
+          entity: shopify_customer
+  - name: PRODUCT_CLICKED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.PRODUCT_CLICKED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+  - name: PRODUCT_LIST_VIEWED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.PRODUCT_LIST_VIEWED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+  - name: USERS
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.USERS
+      occurred_at_col: original_timestamp
+      ids:
+        - select: lower(email)
+          type: email
+          entity: shopify_customer
+  - name: PRODUCT_ADDED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.PRODUCT_ADDED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer
+  - name: PRODUCT_VIEWED
+    app_defaults:
+      table: DREW_DB.SHOPIFY_TEST.PRODUCT_VIEWED
+      occurred_at_col: original_timestamp
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer

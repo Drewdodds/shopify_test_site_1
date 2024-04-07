@@ -1,0 +1,42 @@
+# This is a sample file, for detailed reference see: https://rudderlabs.github.io/pywht/
+models:
+  - name: id_graph
+    model_type: id_stitcher
+    model_spec:
+      entity_key: shopify_customer
+      materialization:
+        run_type: discrete
+      validity_time: 24h
+      edge_sources:
+        - from: inputs/CART_UPDATE
+        - from: inputs/CHECKOUT_UPDATED
+        - from: inputs/IDENTIFIES
+        - from: inputs/ORDER_CREATED
+        - from: inputs/ORDER_PAID
+        - from: inputs/TRACKS
+        - from: inputs/PAGES
+        - from: inputs/CHECKOUT_STARTED
+        - from: inputs/ORDER_UPDATED
+        - from: inputs/PRODUCT_CLICKED
+        - from: inputs/PRODUCT_LIST_VIEWED
+        - from: inputs/USERS
+        - from: inputs/PRODUCT_ADDED
+        - from: inputs/PRODUCT_VIEWED
+#   - name: user_profile
+#     model_type: feature_table_model
+#     model_spec:
+#       validity_time: 24h # 1 day
+#       entity_key: user
+#       features:
+#         - user_lifespan
+#         - days_active
+#
+# var_groups:
+#   - name: default_vars
+#     entity_key: user
+#     vars:
+#       - entity_var:
+#           name: first_seen
+#           select: min(timestamp::date)
+#           from: inputs/rsTracks
+#           is_feature: false

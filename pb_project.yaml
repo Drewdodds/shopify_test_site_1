@@ -1,0 +1,27 @@
+name: drew_shopify_test
+schema_version: 54
+connection: rudder_snowflake_wh
+include_untimed: true
+model_folders:
+  - models
+entities:
+  - name: shopify_customer
+    id_stitcher: models/id_graph
+    id_column_name: profile_id
+    id_types:
+      - user_id
+      - anonymous_id
+      - email
+id_types:
+  - name: user_id
+    filters:
+      - type: exclude
+        value: ""
+  - name: anonymous_id
+    filters:
+      - type: exclude
+        value: ""
+  - name: email
+    filters:
+      - type: exclude
+        value: ""
