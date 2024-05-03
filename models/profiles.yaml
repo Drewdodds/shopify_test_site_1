@@ -22,21 +22,35 @@ models:
         - from: inputs/USERS
         - from: inputs/PRODUCT_ADDED
         - from: inputs/PRODUCT_VIEWED
-#   - name: user_profile
-#     model_type: feature_table_model
-#     model_spec:
-#       validity_time: 24h # 1 day
-#       entity_key: user
-#       features:
-#         - user_lifespan
-#         - days_active
-#
-# var_groups:
-#   - name: default_vars
-#     entity_key: user
-#     vars:
-#       - entity_var:
-#           name: first_seen
-#           select: min(timestamp::date)
-#           from: inputs/rsTracks
-#           is_feature: false
+
+  - name: user_profile
+    model_type: feature_table_model
+    model_spec:
+      entity_key: shopify_customer
+      validity_time: 24h
+      compatibility_mode:
+        linear_dependency_of_vars: false
+      features:
+        - first_name
+var_groups:
+  - name: shopify_users_vars
+    entity_key: shopify_customer
+    vars:
+      - entity_var:
+          select: first_value(first_name)
+          name: first_name
+          window:
+            order_by:
+              - timestamp desc
+          from: inputs/IDENTIFIES
+          where: first_name is not null and first_name!=''
+      - entity_var:
+          select: first_value(last_name)
+          name: last_name
+          window:
+            order_by:
+              - timestamp desc
+          from: inputs/IDENTIFIES
+          where: last_name is not null and last_name!=''
+## why do you have to apply a window function here?
+## - pulled feature from here: https://github.com/rudderlabs/profiles-shopify-features/blob/main/models/profiles.yaml
