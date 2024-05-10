@@ -1,5 +1,5 @@
 name: drew_shopify_test
-schema_version: 54
+schema_version: 61
 connection: rudder_snowflake_wh
 include_untimed: true
 model_folders:
