@@ -36,7 +36,8 @@ models:
         - last_purchase_date
         - num_days_since_last_purchase_with_macro
         - carts_in_past_365_days
-        - latest_cart_id
+        - latest_cart_id_with_window
+        - last_cart_value_in_dollars_ref_window_entity
 var_groups:
   - name: shopify_users_vars
     entity_key: shopify_customer
@@ -81,13 +82,20 @@ var_groups:
           from: inputs/CART_UPDATE
           where: "{{macro_datediff_n('timestamp','365')}}"
           description: A cart id is created for events such as create_cart,update_cart. This coln specifies how many cart ids were created in the past 365 days
-      - entity_var: # run this first except materialize it as a feature. This is to test how a custom sql model works
-          name: latest_cart_id
+      - entity_var: # run this first except materialize it as a feature. This is to test how a custom sql model works. profiles paritions by the profile_id automaticall
+          name: latest_cart_id_with_window
           from: models/cart_line_items
           select: first_value(token)
           window:
             order_by:
               - timestamp desc
+          description: you could choose to not output this as a feature. But for testing reasons I will
+      - entity_var: # then build this which references the cart id from above. Then
+          name: last_cart_value_in_dollars_ref_window_entity
+          select: sum(line_price)
+          from: models/cart_line_items
+          where: token={{shopify_customer.Var("latest_cart_id_with_window")}}
+          description: The value of products added in the latest cart.
 
 ## - example features pulled feature from here: https://github.com/rudderlabs/profiles-shopify-features/blob/main/models/profiles.yaml
 
