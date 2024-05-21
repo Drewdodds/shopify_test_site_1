@@ -33,11 +33,13 @@ models:
         - first_name
         - last_name
         - last_transaction_value
-        - last_purchase_date
+        - last_purchase_date_from_input_table
+        - last_purchase_date_from_sql_model
         - num_days_since_last_purchase_with_macro
         - carts_in_past_365_days
         - latest_cart_id_with_window
         - last_cart_value_in_dollars_ref_window_entity
+        - last_cart_value_in_dollars_ref_input
 var_groups:
   - name: shopify_users_vars
     entity_key: shopify_customer
@@ -59,6 +61,14 @@ var_groups:
           from: inputs/IDENTIFIES
           where: last_name is not null and last_name!=''
       - entity_var:
+          select: first_value(email)
+          name: email
+          window:
+            order_by:
+              - timestamp desc
+          from: inputs/IDENTIFIES
+          where: email is not null and email!=''
+      - entity_var:
           name: last_transaction_value
           from: inputs/ORDER_CREATED
           select: first_value(SUBTOTAL_PRICE)
@@ -68,13 +78,18 @@ var_groups:
               - timestamp asc
           description: The total value of products that are part of the last transaction.
       - entity_var:
-          name: last_purchase_date
+          name: last_purchase_date_from_input_table
           select: max(ORIGINAL_TIMESTAMP)
           from: inputs/ORDER_CREATED
           description: most recent purchase date per profile id
       - entity_var:
+          name: last_purchase_date_from_sql_model
+          select: max(ORIGINAL_TIMESTAMP)
+          from: models/order_checkout_union
+          description: most recent purchase date per profile id from custom sql model
+      - entity_var:
           name: num_days_since_last_purchase_with_macro
-          select: "{{macro_datediff('{{shopify_customer.Var(\"last_purchase_date\")}}')}}"
+          select: "{{macro_datediff('{{shopify_customer.Var(\"last_purchase_date_from_input_table\")}}')}}"
           description: The number of days per main id since last purchase with macro
       - entity_var:
           name: carts_in_past_365_days
@@ -90,12 +105,28 @@ var_groups:
             order_by:
               - timestamp desc
           description: you could choose to not output this as a feature. But for testing reasons I will
-      - entity_var: # then build this which references the cart id from above. Then
+      - entity_var: # then build this which references the cart id from above.
           name: last_cart_value_in_dollars_ref_window_entity
           select: sum(line_price)
           from: models/cart_line_items
           where: token={{shopify_customer.Var("latest_cart_id_with_window")}}
-          description: The value of products added in the latest cart.
+          description: The value of products added in the latest cart. This time, using the above entity var as a ref in the where clause
+      - input_var:
+          name: latest_cart_id_rank
+          description: this is an alternate way to compute the feature above. Where we first create a row number that will rank the cart id of each user where the most recent one has a rank of 1.
+          select: rank()
+          from: models/cart_line_items
+          window:
+            partition_by:
+              - profile_id
+            order_by:
+              - timestamp desc
+      - entity_var: # then build this which references the input_var from above.
+          name: last_cart_value_in_dollars_ref_input
+          select: sum(line_price)
+          from: models/cart_line_items
+          where: "{{cart_line_items.Var(\"latest_cart_id_rank\")}}=1"
+          description: The value of products added in the latest cart. This time, using the above input_var as a ref in the where clause
 
 ## - example features pulled feature from here: https://github.com/rudderlabs/profiles-shopify-features/blob/main/models/profiles.yaml
 

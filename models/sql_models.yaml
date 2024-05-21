@@ -27,7 +27,7 @@ models:
             t.value['total_discount'] AS total_discount,
             to_char(t.value['variant']) AS _VARIANT_,
             products,
-            anonymous_id,timestamp, 
+            anonymous_id,timestamp,
             token
         FROM
         (SELECT *
@@ -49,66 +49,69 @@ models:
           - shopify_customer
         with_columns:
           - name: anonymous_id
-#   - name: order_checkout_union
-#     model_type: sql_template
-#     model_spec:
-#       validity_time: 24h # 1 day
-#       materialization:
-#         output_type: table
-#         run_type: discrete
-#       single_sql: |
-#             select ANONYMOUS_ID,
-#                    NOTE_ATTRIBUTES,
-#                    email,
-#                    USER_ID,
-#                    ORIGINAL_TIMESTAMP,
-#                    flat_1.VALUE::string as rudderAnonymousId
-#                 from DREW_DB.SHOPIFY_TEST.ORDER_CREATED,
-#                      lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
-#             where flat_1.VALUE::string <> 'rudderAnonymousId'
-#             union
-#             select ANONYMOUS_ID,
-#                    NOTE_ATTRIBUTES,
-#                    email,
-#                    USER_ID,
-#                    ORIGINAL_TIMESTAMP,
-#                    flat_1.VALUE::string as rudderAnonymousId
-#                 from DREW_DB.SHOPIFY_TEST.ORDER_UPDATED,
-#                      lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
-#             where flat_1.VALUE::string <> 'rudderAnonymousId'
-#             union
-#             select ANONYMOUS_ID,
-#                    NOTE_ATTRIBUTES,
-#                    email,
-#                    USER_ID,
-#                    ORIGINAL_TIMESTAMP,
-#                    flat_1.VALUE::string as rudderAnonymousId
-#                 from DREW_DB.SHOPIFY_TEST.ORDER_PAID,
-#                      lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
-#             where flat_1.VALUE::string <> 'rudderAnonymousId'
-#             union
-#             select ANONYMOUS_ID,
-#                    NOTE_ATTRIBUTES,
-#                    email,
-#                    USER_ID,
-#                    ORIGINAL_TIMESTAMP,
-#                    flat_1.VALUE::string as rudderAnonymousId
-#                 from DREW_DB.SHOPIFY_TEST.CHECKOUT_UPDATED,
-#                      lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
-#             where flat_1.VALUE::string <> 'rudderAnonymousId'
-#       ids:
-#         - select: USER_ID
-#           type: user_id
-#           entity: shopify_customer
-#         - select: ANONYMOUS_ID
-#           type: anonymous_id
-#           entity: shopify_customer
-#         - select: lower(email)
-#           type: email
-#           entity: shopify_customer
-#         - select: rudderAnonymousId
-#           type: anonymous_id
-#           entity: shopify_customer
-#         - select: userId
-#           type: user_id
-#           entity: shopify_customer
+  - name: order_checkout_union
+    model_type: sql_template
+    model_spec:
+      validity_time: 24h # 1 day
+      materialization:
+        output_type: table
+        run_type: discrete
+      single_sql: |
+        select ANONYMOUS_ID,
+               NOTE_ATTRIBUTES,
+               email,
+               USER_ID,
+               ORIGINAL_TIMESTAMP,
+               flat_1.VALUE::string as rudderAnonymousId
+            from DREW_DB.SHOPIFY_TEST.ORDER_CREATED,
+                 lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
+        where flat_1.VALUE::string <> 'rudderAnonymousId'
+        union
+        select ANONYMOUS_ID,
+               NOTE_ATTRIBUTES,
+               email,
+               USER_ID,
+               ORIGINAL_TIMESTAMP,
+               flat_1.VALUE::string as rudderAnonymousId
+            from DREW_DB.SHOPIFY_TEST.ORDER_UPDATED,
+                 lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
+        where flat_1.VALUE::string <> 'rudderAnonymousId'
+        union
+        select ANONYMOUS_ID,
+               NOTE_ATTRIBUTES,
+               email,
+               USER_ID,
+               ORIGINAL_TIMESTAMP,
+               flat_1.VALUE::string as rudderAnonymousId
+            from DREW_DB.SHOPIFY_TEST.ORDER_PAID,
+                 lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
+        where flat_1.VALUE::string <> 'rudderAnonymousId'
+        union
+        select ANONYMOUS_ID,
+               NOTE_ATTRIBUTES,
+               email,
+               USER_ID,
+               ORIGINAL_TIMESTAMP,
+               flat_1.VALUE::string as rudderAnonymousId
+            from DREW_DB.SHOPIFY_TEST.CHECKOUT_UPDATED,
+                 lateral flatten (input=> get(parse_json(NOTE_ATTRIBUTES),0)) as flat_1
+        where flat_1.VALUE::string <> 'rudderAnonymousId'
+      ids:
+        - select: USER_ID
+          type: user_id
+          entity: shopify_customer
+        - select: ANONYMOUS_ID
+          type: anonymous_id
+          entity: shopify_customer
+        - select: lower(email)
+          type: email
+          entity: shopify_customer
+      contract:
+        is_optional: false
+        is_event_stream: true
+        with_entity_ids:
+          - shopify_customer
+        with_columns:
+          - name: user_id
+          - name: anonymous_id
+          - name: email
