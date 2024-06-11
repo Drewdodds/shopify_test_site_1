@@ -54,7 +54,7 @@ models:
     model_spec:
       validity_time: 24h # 1 day
       materialization:
-        output_type: table
+        output_type: ephemeral
         run_type: discrete
       single_sql: |
         select ANONYMOUS_ID,
@@ -115,3 +115,30 @@ models:
           - name: user_id
           - name: anonymous_id
           - name: email
+  - name: email_exclusions #test model here
+    model_type: sql_template
+    model_spec:
+      validity_time: 24h # 1 day
+      materialization:
+        output_type: ephemeral
+        run_type: discrete
+      single_sql: |
+        select email from drew_db.rs_profiles.email_exclusions
+      ids:
+        - select: email
+          type: email
+          entity: shopify_customer
+
+  - name: anonymous_id_exclusions
+    model_type: sql_template
+    model_spec:
+      validity_time: 24h # 1 day
+      materialization:
+        output_type: ephemeral
+        run_type: discrete
+      single_sql: |
+        select anonymous_id from DREW_DB.RS_PROFILES.anonymous_id_exclusions
+      ids:
+        - select: anonymous_id
+          type: anonymous_id
+          entity: shopify_customer

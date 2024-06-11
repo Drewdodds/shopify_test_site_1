@@ -11,6 +11,13 @@ entities:
       - user_id
       - anonymous_id
       - email
+    feature_views:
+      #name: shopify_customer_all_view # see if the SHOPIFY_CUSTOMER_FEATURE_VIEW went away in seq 3
+      using_ids:
+        - id: email
+          name: shopify_customer_by_email
+        - id: user_id
+          name: shopify_customer_by_user_id
 id_types:
   - name: user_id
     filters:
@@ -20,7 +27,16 @@ id_types:
     filters:
       - type: exclude
         value: ""
+      - type: exclude
+        sql:
+          select: anonymous_id
+          from: models/anonymous_id_exclusions
   - name: email
     filters:
       - type: exclude
-        value: ""
+        value: " "
+      - type: exclude
+        sql:
+          select: email
+          from: models/email_exclusions
+

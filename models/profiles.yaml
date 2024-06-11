@@ -32,15 +32,64 @@ models:
       features:
         - first_name
         - last_name
+        - last_seen_date
+        - shopify_customer_email
         - last_transaction_value
         - last_purchase_date_from_input_table
         - last_purchase_date_from_sql_model
+        - first_purchase_date_from_input_table
+        - first_purchase_date_from_sql_model
         - num_days_since_last_purchase_with_macro
         - carts_in_past_365_days
         - latest_cart_id_with_window
         - last_cart_value_in_dollars_ref_window_entity
         - last_cart_value_in_dollars_ref_input
-var_groups:
+        - total_gross_spent
+
+  - name: high_value_customers
+    model_type: entity_cohort
+    model_spec:
+      extends: shopify_customer/all
+      materialization:
+        output_type: table
+      filter_pipeline:
+        - type: include
+          value: "{{shopify_customer.Var('total_gross_spent')}} > 1000"
+      feature_views:
+        using_ids:
+          - id: email
+            name: hv_users_by_email
+
+# #LOGIC DOESN'T WORK TO BUILD A COHORT FROM A COHORT YET
+  #- name: cohort_within_cohort_test
+#    model_type: entity_cohort
+#    model_spec:
+#      extends: models/high_value_customers
+#      materialization:
+#        output_type: table
+#      filter_pipeline:
+#        - type: include
+#          value: "{{shopify_customer.Var('first_name')}} = 'Drew'"
+
+  - name: low_value_customers
+    model_type: entity_cohort
+    model_spec:
+      extends: shopify_customer/all
+      materialization:
+        output_type: table
+      filter_pipeline:
+        - type: include
+          value: "{{shopify_customer.Var('total_gross_spent')}} < 1000"
+
+
+var_groups: #prev run did not add features to feature views or using id view
+  - name: hv_vars
+    entity_cohort: models/high_value_customers
+    vars:
+      - entity_var:
+          name: hv_name
+          select: min(FIRST_NAME)
+          from: inputs/IDENTIFIES
   - name: shopify_users_vars
     entity_key: shopify_customer
     vars:
@@ -53,6 +102,13 @@ var_groups:
           from: inputs/IDENTIFIES
           where: first_name is not null and first_name!=''
       - entity_var:
+          name: last_seen_date
+          select: max(timestamp::date)
+          window:
+            order_by:
+              - timestamp desc
+          from: inputs/PAGES
+      - entity_var:
           select: first_value(last_name)
           name: last_name
           window:
@@ -62,7 +118,7 @@ var_groups:
           where: last_name is not null and last_name!=''
       - entity_var:
           select: first_value(email)
-          name: email
+          name: shopify_customer_email
           window:
             order_by:
               - timestamp desc
@@ -83,10 +139,20 @@ var_groups:
           from: inputs/ORDER_CREATED
           description: most recent purchase date per profile id
       - entity_var:
+          name: first_purchase_date_from_input_table
+          select: min(ORIGINAL_TIMESTAMP)
+          from: inputs/ORDER_CREATED
+          description: first purchase date created from input table
+      - entity_var:
           name: last_purchase_date_from_sql_model
           select: max(ORIGINAL_TIMESTAMP)
           from: models/order_checkout_union
           description: most recent purchase date per profile id from custom sql model
+      - entity_var: # good use case to show for enablement in building features. It was better to union sources
+          name: first_purchase_date_from_sql_model
+          select: min(ORIGINAL_TIMESTAMP)
+          from: models/order_checkout_union
+          description: most recent purchase date created from custom sql model # check to see if this is in entity_var_table but not in feature table model
       - entity_var:
           name: num_days_since_last_purchase_with_macro
           select: "{{macro_datediff('{{shopify_customer.Var(\"last_purchase_date_from_input_table\")}}')}}"
@@ -97,7 +163,9 @@ var_groups:
           from: inputs/CART_UPDATE
           where: "{{macro_datediff_n('timestamp','365')}}"
           description: A cart id is created for events such as create_cart,update_cart. This coln specifies how many cart ids were created in the past 365 days
-      - entity_var: # run this first except materialize it as a feature. This is to test how a custom sql model works. profiles paritions by the profile_id automaticall
+      # below are two separate ways to derive the same value. The first method, we create an entity-var to ref in the follwing entity_var. The 2nd we create an input_var to ref in the following entity_var
+      # The end goal was to have a feature for our user that shows the latest cart value $ amount
+      - entity_var: # This is the first way. We created this entity var to output the latest cart id. We then ref this in the next entity_var
           name: latest_cart_id_with_window
           from: models/cart_line_items
           select: first_value(token)
@@ -105,14 +173,16 @@ var_groups:
             order_by:
               - timestamp desc
           description: you could choose to not output this as a feature. But for testing reasons I will
-      - entity_var: # then build this which references the cart id from above.
+      - entity_var: # ref the above entity_var in the where clause in order to filter for the latest cart id so we can sum the dollar value
           name: last_cart_value_in_dollars_ref_window_entity
           select: sum(line_price)
           from: models/cart_line_items
           where: token={{shopify_customer.Var("latest_cart_id_with_window")}}
           description: The value of products added in the latest cart. This time, using the above entity var as a ref in the where clause
+
+      # This is the 2nd method where we create and use input var.
       - input_var:
-          name: latest_cart_id_rank
+          name: latest_cart_id_rank # we create an input var to rank all the carts per user. We then use this below in the following entity_var
           description: this is an alternate way to compute the feature above. Where we first create a row number that will rank the cart id of each user where the most recent one has a rank of 1.
           select: rank()
           from: models/cart_line_items
@@ -121,13 +191,25 @@ var_groups:
               - profile_id
             order_by:
               - timestamp desc
-      - entity_var: # then build this which references the input_var from above.
+      - entity_var: # Here is where we ref the intput_var above in the where clause in order to filter for the desired cart and then sum the dollar amount.
           name: last_cart_value_in_dollars_ref_input
           select: sum(line_price)
           from: models/cart_line_items
           where: "{{cart_line_items.Var(\"latest_cart_id_rank\")}}=1"
           description: The value of products added in the latest cart. This time, using the above input_var as a ref in the where clause
 
+      - entity_var:
+          name: total_gross_spent
+          select: sum(line_price)
+          from: models/cart_line_items
+          description: The total money spent per user
+      - entity_var:
+          name: page_tag
+          select: any_value('YES')
+          from: inputs/PAGES
+          description: a tag that someone exist in this input
+
+## don not uncomment
 ## - example features pulled feature from here: https://github.com/rudderlabs/profiles-shopify-features/blob/main/models/profiles.yaml
 
 #      - entity_var: # run this first except materialize it as a feature. This is to test how a custom sql model works
