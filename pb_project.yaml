@@ -12,7 +12,7 @@ entities:
       - anonymous_id
       - email
     feature_views:
-      #name: shopify_customer_all_view # see if the SHOPIFY_CUSTOMER_FEATURE_VIEW went away in seq 3
+      name: shopify_customer_all_view # see if the SHOPIFY_CUSTOMER_FEATURE_VIEW went away in seq 3
       using_ids:
         - id: email
           name: shopify_customer_by_email
