@@ -90,6 +90,7 @@ var_groups: #prev run did not add features to feature views or using id view
           name: hv_name
           select: min(FIRST_NAME)
           from: inputs/IDENTIFIES
+          description: first name per high value customer.
   - name: shopify_users_vars
     entity_key: shopify_customer
     vars:
@@ -101,6 +102,7 @@ var_groups: #prev run did not add features to feature views or using id view
               - timestamp desc
           from: inputs/IDENTIFIES
           where: first_name is not null and first_name!=''
+          description: first name per shopify customer
       - entity_var:
           name: last_seen_date
           select: max(timestamp::date)
