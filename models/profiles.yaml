@@ -59,18 +59,7 @@ models:
         using_ids:
           - id: email
             name: hv_users_by_email
-
-# #LOGIC DOESN'T WORK TO BUILD A COHORT FROM A COHORT YET
-  #- name: cohort_within_cohort_test
-#    model_type: entity_cohort
-#    model_spec:
-#      extends: models/high_value_customers
-#      materialization:
-#        output_type: table
-#      filter_pipeline:
-#        - type: include
-#          value: "{{shopify_customer.Var('first_name')}} = 'Drew'"
-
+            # #LOGIC DOESN'T WORK TO BUILD A COHORT FROM A COHORT YET
   - name: low_value_customers
     model_type: entity_cohort
     model_spec:
@@ -80,8 +69,6 @@ models:
       filter_pipeline:
         - type: include
           value: "{{shopify_customer.Var('total_gross_spent')}} < 1000"
-
-
 var_groups: #prev run did not add features to feature views or using id view
   - name: hv_vars
     entity_cohort: models/high_value_customers
@@ -181,7 +168,6 @@ var_groups: #prev run did not add features to feature views or using id view
           from: models/cart_line_items
           where: token={{shopify_customer.Var("latest_cart_id_with_window")}}
           description: The value of products added in the latest cart. This time, using the above entity var as a ref in the where clause
-
       # This is the 2nd method where we create and use input var.
       - input_var:
           name: latest_cart_id_rank # we create an input var to rank all the carts per user. We then use this below in the following entity_var
@@ -199,7 +185,6 @@ var_groups: #prev run did not add features to feature views or using id view
           from: models/cart_line_items
           where: "{{cart_line_items.Var(\"latest_cart_id_rank\")}}=1"
           description: The value of products added in the latest cart. This time, using the above input_var as a ref in the where clause
-
       - entity_var:
           name: total_gross_spent
           select: sum(line_price)

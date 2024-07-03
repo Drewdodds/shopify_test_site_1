@@ -128,7 +128,6 @@ models:
         - select: email
           type: email
           entity: shopify_customer
-
   - name: anonymous_id_exclusions
     model_type: sql_template
     model_spec:

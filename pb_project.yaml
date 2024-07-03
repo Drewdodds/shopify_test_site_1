@@ -1,5 +1,5 @@
 name: drew_shopify_test
-schema_version: 63
+schema_version: 67
 connection: rudder_snowflake_wh
 model_folders:
   - models
@@ -13,7 +13,6 @@ entities:
       - email
     feature_views:
       name: shopify_customer_all_view # see if the SHOPIFY_CUSTOMER_FEATURE_VIEW went away in
-        seq 3
       using_ids:
         - id: email
           name: shopify_customer_by_email
@@ -40,4 +39,3 @@ id_types:
         sql:
           select: email
           from: models/email_exclusions
-
