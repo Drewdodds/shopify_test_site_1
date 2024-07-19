@@ -163,15 +163,15 @@ models:
         run_type: discrete
       single_sql: |
         {% with cart = this.DeRef("models/cart_line_items") %}
-          with t1 as (
+              with t1 as (
                         select ANONYMOUS_ID,
                                 price
                         from {{cart}} 
-            )
+                )
         
-          select *, 
-          round((price),2) as disc_price
-          from t1
+              select *, 
+              round((price),2) as disc_price
+              from t1
         {% endwith %}
       ids:
         - select: "anonymous_id"
