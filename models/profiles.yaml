@@ -45,7 +45,6 @@ models:
         - last_cart_value_in_dollars_ref_window_entity
         - last_cart_value_in_dollars_ref_input
         - total_gross_spent
-
   - name: high_value_customers
     model_type: entity_cohort
     model_spec:
@@ -93,9 +92,6 @@ var_groups: #prev run did not add features to feature views or using id view
       - entity_var:
           name: last_seen_date
           select: max(timestamp::date)
-          window:
-            order_by:
-              - timestamp desc
           from: inputs/PAGES
       - entity_var:
           select: first_value(last_name)
@@ -116,7 +112,7 @@ var_groups: #prev run did not add features to feature views or using id view
       - entity_var:
           name: last_transaction_value
           from: inputs/ORDER_CREATED
-          select: first_value(SUBTOTAL_PRICE)
+          select: last_value(SUBTOTAL_PRICE)
           window:
             order_by:
               - case when SUBTOTAL_PRICE is not null then 2 else 1 end desc # interesting way to force and order here.

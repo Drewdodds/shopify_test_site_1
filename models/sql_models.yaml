@@ -128,16 +128,59 @@ models:
         - select: email
           type: email
           entity: shopify_customer
-  - name: anonymous_id_exclusions
+
+  - name: sql_ref_feature_view #test model here
     model_type: sql_template
     model_spec:
       validity_time: 24h # 1 day
       materialization:
-        output_type: ephemeral
+        output_type: view
         run_type: discrete
       single_sql: |
-        select anonymous_id from DREW_DB.RS_PROFILES.anonymous_id_exclusions
+        select email from drew_db.rs_profiles.email_exclusions
       ids:
-        - select: anonymous_id
+        - select: email
+          type: email
+          entity: shopify_customer
+# droped the anon_id exclusion table for testing
+#  - name: anonymous_id_exclusions
+#    model_type: sql_template
+#    model_spec:
+#      validity_time: 24h # 1 day
+#      materialization:
+#        output_type: ephemeral
+#        run_type: discrete
+#      single_sql: |
+#        select anonymous_id from DREW_DB.RS_PROFILES.anonymous_id_exclusions
+
+
+  - name: cart_line_items_test
+    model_type: sql_template
+    model_spec:
+      validity_time: 24h # 1 day
+      materialization:
+        output_type: table
+        run_type: discrete
+      single_sql: |
+        {% with cart = this.DeRef("models/cart_line_items") %}
+          with t1 as (
+                        select ANONYMOUS_ID,
+                                price
+                        from {{cart}} 
+            )
+        
+          select *, 
+          round((price),2) as disc_price
+          from t1
+        {% endwith %}
+      ids:
+        - select: "anonymous_id"
           type: anonymous_id
           entity: shopify_customer
+      contract:
+        is_optional: false
+        is_event_stream: false
+        with_entity_ids:
+          - shopify_customer
+        with_columns:
+          - name: anonymous_id
