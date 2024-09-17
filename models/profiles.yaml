@@ -1,5 +1,5 @@
 # This is a sample file, for detailed reference see: https://rudderlabs.github.io/pywht/
-models: #test
+models:
   - name: id_graph
     model_type: id_stitcher
     model_spec:
