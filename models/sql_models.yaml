@@ -124,12 +124,12 @@ models:
         run_type: discrete
       single_sql: |
         select email from drew_db.rs_profiles.email_exclusions
-      ids:
-        - select: email
-          type: email
-          entity: shopify_customer
-
   - name: sql_ref_feature_view #test model here
+    #      ids:
+    #        - select: email
+    #          type: email
+    #          entity: shopify_customer
+
     model_type: sql_template
     model_spec:
       validity_time: 24h # 1 day
@@ -142,19 +142,18 @@ models:
         - select: email
           type: email
           entity: shopify_customer
-# droped the anon_id exclusion table for testing
-#  - name: anonymous_id_exclusions
-#    model_type: sql_template
-#    model_spec:
-#      validity_time: 24h # 1 day
-#      materialization:
-#        output_type: ephemeral
-#        run_type: discrete
-#      single_sql: |
-#        select anonymous_id from DREW_DB.RS_PROFILES.anonymous_id_exclusions
-
-
   - name: cart_line_items_test
+    # droped the anon_id exclusion table for testing
+    #  - name: anonymous_id_exclusions
+    #    model_type: sql_template
+    #    model_spec:
+    #      validity_time: 24h # 1 day
+    #      materialization:
+    #        output_type: ephemeral
+    #        run_type: discrete
+    #      single_sql: |
+    #        select anonymous_id from DREW_DB.RS_PROFILES.anonymous_id_exclusions
+
     model_type: sql_template
     model_spec:
       validity_time: 24h # 1 day
@@ -166,10 +165,10 @@ models:
                ,t1 as (
                         select ANONYMOUS_ID,
                                 price
-                        from {{cart}} 
+                        from {{cart}}
                 )
-        
-              select *, 
+
+              select *,
               round((price *0.8),2) as disc_price
               from t1
         {% endwith %}
