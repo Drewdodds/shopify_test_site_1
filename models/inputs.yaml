@@ -1,4 +1,4 @@
-inputs:
+inputs: #test
   - name: CART_UPDATE
     app_defaults:
       table: DREW_DB.SHOPIFY_TEST.CART_UPDATE
